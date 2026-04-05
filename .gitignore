@@ -1,3 +1,5 @@
-media/*
+media/reviews/*
+media/tests/*
+media/data.db
 .env
 .idea
