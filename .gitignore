@@ -1,5 +1,6 @@
 media/reviews/*
 media/tests/*
 media/data.db
+media/secrets/*
 .env
 .idea
