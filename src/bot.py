@@ -11,7 +11,9 @@ import os
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_ID")
+
 USER_EXPIRE_INTERVAL = 15
+VERSION="1.0.0"
 
 if TOKEN is None:
     quit("No bot token specified")
@@ -27,6 +29,11 @@ core = Core()
 @bot.message_handler(commands=["ping"])
 def pong(m: telebot.types.Message):
     bot.reply_to(m, "Pong!")
+
+
+@bot.message_handler(commands=['version'])
+def version(m: telebot.types.Message):
+    bot.reply_to(m, f"Version {VERSION}")
 
 
 timer_event = threading.Event()
