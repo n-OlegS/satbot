@@ -1,6 +1,7 @@
 import telebot
 from telebot import TeleBot
 from core import Core, QUESTION_NUM
+import sheets
 from dotenv import load_dotenv
 import sqlite3
 import threading
@@ -13,7 +14,7 @@ TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_ID")
 
 USER_EXPIRE_INTERVAL = 15
-VERSION="1.0.2"
+VERSION="1.1.2"
 
 if TOKEN is None:
     quit("No bot token specified")
@@ -39,9 +40,14 @@ def version(m: telebot.types.Message):
 timer_event = threading.Event()
 
 
-def expire_user(uid):
+def finish_and_export(uid, message):
     core.finish_test(uid)
-    bot.send_message(uid, "Время вышло! Тест завершён.")
+    bot.send_message(uid, message)
+    threading.Thread(target=sheets.export_test, args=(core.t_id,), daemon=True).start()
+
+
+def expire_user(uid):
+    finish_and_export(uid, "Время вышло! Тест завершён.")
 
 
 def check_timers():
@@ -101,6 +107,27 @@ def new_test(m: telebot.types.Message):
     bot.send_message(m.chat.id, "Новый тест создан. Все студенты сброшены.")
 
 
+@bot.message_handler(commands=['export'])
+def export(m: telebot.types.Message):
+    if m.from_user.id != ADMIN_ID:
+        return
+
+    arg = m.text.partition(" ")[2].strip().lower()
+
+    if arg == "test":
+        threading.Thread(target=lambda: bot.reply_to(m, sheets.export_dummy()), daemon=True).start()
+    elif arg == "all":
+        def run():
+            msgs = sheets.export_all()
+            bot.reply_to(m, "\n".join(msgs) if msgs else "No data found.")
+        threading.Thread(target=run, daemon=True).start()
+    else:
+        threading.Thread(
+            target=lambda: bot.reply_to(m, sheets.export_test(core.t_id)),
+            daemon=True
+        ).start()
+
+
 @bot.message_handler(commands=['finish_test'])
 def finish_test(m: telebot.types.Message):
     uid = m.from_user.id
@@ -109,8 +136,7 @@ def finish_test(m: telebot.types.Message):
         bot.reply_to(m, "У вас нет активного теста.")
         return
 
-    core.finish_test(uid)
-    bot.send_message(m.chat.id, "Тест завершён!")
+    finish_and_export(uid, "Тест завершён!")
 
 
 @bot.message_handler(func=lambda m: True)
