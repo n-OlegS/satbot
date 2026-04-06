@@ -134,3 +134,5 @@ def handle_message(m: telebot.types.Message):
     else:
         bot.reply_to(m, "Отправьте букву (a, b, c или d) или номер вопроса (1-44).")
 
+
+bot.infinity_polling()
