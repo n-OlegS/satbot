@@ -13,7 +13,7 @@ TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_ID")
 
 USER_EXPIRE_INTERVAL = 15
-VERSION="1.0.0"
+VERSION="1.0.1"
 
 if TOKEN is None:
     quit("No bot token specified")

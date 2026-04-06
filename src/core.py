@@ -26,7 +26,7 @@ class Core:
         self.load_tid()
 
     def load_tid(self):
-        tid = self.cursor.execute('select val from kv where key = "current_tid"').fetchone()
+        tid = self.cursor.execute('select val from kv where key = "current_tid"').fetchone()[0]
         self.t_id = int(tid)
 
     def save_tid(self):
