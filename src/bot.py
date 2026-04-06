@@ -14,7 +14,7 @@ TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_ID")
 
 USER_EXPIRE_INTERVAL = 15
-VERSION="1.1.0"
+VERSION="1.2.0"
 
 if TOKEN is None:
     quit("No bot token specified")
@@ -35,6 +35,18 @@ def pong(m: telebot.types.Message):
 @bot.message_handler(commands=['version'])
 def version(m: telebot.types.Message):
     bot.reply_to(m, f"Version {VERSION}")
+
+
+@bot.message_handler(commands=['info'])
+def info(m: telebot.types.Message):
+    row = core.info(m.from_user.id)
+
+    if row is None:
+        bot.reply_to(m, "Вы не зарегистрированы. Обратитесь к преподавателю.")
+        return
+
+    status = {0: "Тест не начат.", 1: "Тест в процессе.", 2: "Тест завершён."}
+    bot.reply_to(m, status[row[0]])
 
 
 timer_event = threading.Event()
@@ -70,13 +82,13 @@ def send_question(m: telebot.types.Message):
     if result is None:
         return
 
-    cq, q_path, rem_t = result
+    cq, q_path, rem_t, brutal_str = result
 
     if time.time() >= rem_t:
         expire_user(m.from_user.id)
         return
 
-    text = f"Вопрос {cq}/44\n\nОтправьте букву чтобы ответить или цифру, чтобы перейти на другой вопрос"
+    text = f"Вопрос {cq}/44\n\nОтправьте букву чтобы ответить или цифру, чтобы перейти на другой вопрос\n\nПрогресс:\n{brutal_str}"
 
     with open(q_path, 'rb') as f:
         bot.send_photo(m.chat.id, f, caption=text)

@@ -42,7 +42,16 @@ class Core:
         q_path = media_path / f"tests/{self.t_id}/{cq}.{EXTENSION}"
         remaining_t = start_t + (70 * 60)
 
-        return cq, q_path, remaining_t
+        return cq, q_path, remaining_t, self.generate_brutal_string(uid)
+
+    def generate_brutal_string(self, uid):
+        solved_q = {row[0] for row in self.cursor.execute(
+            f'select q_id from answers where id = {uid} and t_id = {self.t_id}'
+        ).fetchall()}
+
+        cells = ["[✓]" if i in solved_q else f"[{i}]" for i in range(1, 45)]
+        rows = [cells[i:i + 10] for i in range(0, 44, 10)]
+        return "\n".join(" ".join(row) for row in rows)
 
     def has_active_users(self):
         row = self.cursor.execute('select count(*) from users where active = 1').fetchone()
