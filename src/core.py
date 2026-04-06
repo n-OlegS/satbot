@@ -20,7 +20,7 @@ db_path = media_path / "data.db"
 class Core:
     def __init__(self):
         self.t_id = 0
-        self.conn = sqlite3.connect(db_path)
+        self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.cursor = self.conn.cursor()
 
         self.load_tid()
